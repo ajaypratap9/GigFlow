@@ -1,0 +1,35 @@
+version: '3.8'
+services:
+  mongo:
+    image: mongo:7
+    container_name: smart-leads-mongo
+    ports: ["27017:27017"]
+    volumes: [mongo_data:/data/db]
+    networks: [app-network]
+
+  server:
+    build: 
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: smart-leads-server
+    ports: ["5000:5000"]
+    env_file: .env
+    depends_on: [mongo]
+    networks: [app-network]
+    volumes: [./server/src:/app/src]
+
+  client:
+    build: 
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: smart-leads-client
+    ports: ["3000:3000"]
+    environment: [VITE_API_URL=http://localhost:5000/api]
+    networks: [app-network]
+
+volumes: 
+  mongo_data:
+
+networks: 
+  app-network: 
+    driver: bridge
